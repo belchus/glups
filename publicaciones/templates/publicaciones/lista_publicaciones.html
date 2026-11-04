@@ -5,10 +5,17 @@ Publicaciones
 {% endblock %}
 
 {% block content %}
+<a href="{% url 'crear_publicacion' %}">+ Crear publicacion</a>
   <h2>Listado de Publicaciones</h2>
     <ul>
         {% for publicacion in publicaciones %}
         <li>{{ publicacion.titulo }} - {{ publicacion.autor }} </li>
+        <a href="{% url 'editar_publicacion' publicacion.id %}">Editar</a>
+        <form action="{% url 'eliminar_publicacion' publicacion.id %}"
+        method="POST">
+        {% csrf_token %}
+        <button type="submit">Eliminar</button>
+      </form>
         {% endfor %}
     </ul>
 {% endblock %}
