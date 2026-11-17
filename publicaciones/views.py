@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse
 
-from publicaciones.models import Publicacion
+from .forms import AutorForm, PublicacionForm
+from .models import Autor, Publicacion
 
 # Create your views here.
 def base(request):
@@ -19,11 +20,7 @@ def lista_publicaciones(request):
 
 # Falta modificar esto
 def lista_autores(request):
-    autores = [
-        {"nombre":"Camila", "post": 3},
-        {"nombre":"Evelyn", "post": 5},
-        {"nombre":"Pedro", "post": 2}
-        ]
+    autores = Autor.objects.all()
     contexto = {"autores": autores}
     return render(request, "publicaciones/lista_autores.html", contexto)
 
@@ -33,18 +30,32 @@ def lista_autores(request):
 
 def crear_publicacion(request):
     if request.method == "POST":
-        titulo = request.POST["titulo"]
-        descripcion = request.POST["descripcion"]
-        autor = request.POST["autor"]
-        estado = request.POST["estado"]
-        Publicacion.objects.create(
-            titulo = titulo,
-            descripcion = descripcion,
-            autor = autor,
-            estado = estado
+        formulario = PublicacionForm(
+            request.POST,
+            request.FILES
         )
-        return redirect("lista_publicaciones")
-    return render(request,"publicaciones/crear_publicacion.html")
+
+        if formulario.is_valid():
+            formulario.save()
+            return redirect("lista_publicaciones")
+    else:
+        formulario = PublicacionForm()
+    return render(request,"publicaciones/crear_publicacion.html",{"formulario":formulario})
+
+def crear_autor(request):
+    if request.method == "POST":
+        formulario = AutorForm(
+            request.POST,
+            request.FILES
+        )
+        if formulario.is_valid():
+            formulario.save()
+            return redirect("lista_autores")
+    else:
+        formulario = AutorForm()
+    
+    return render(request,"publicaciones/crear_autor.html",{"formulario":formulario})
+    
 
 # ---------------
 # UPDATE
@@ -53,15 +64,38 @@ def editar_publicacion(request,id):
     publicacion = get_object_or_404(Publicacion,id=id)
 
     if request.method == "POST":
-        publicacion.titulo = request.POST["titulo"]
-        publicacion.descripcion = request.POST["descripcion"]
-        publicacion.autor = request.POST["autor"]
-        publicacion.estado = request.POST["estado"]
+        formulario = PublicacionForm(
+            request.POST,
+            request.FILES,
+            instance=publicacion
+        )
 
-        publicacion.save()
+        if formulario.is_valid():
 
-        return redirect("lista_publicaciones")
-    return render(request,"publicaciones/editar_publicacion.html",{"publicacion":publicacion})
+            publicacion.save()
+
+            return redirect("lista_publicaciones")
+    else:
+        formulario = PublicacionForm(instance=publicacion)
+    return render(request,"publicaciones/editar_publicacion.html",{"publicacion":publicacion,"formulario":formulario})
+
+#Proximamente editamos esto y es def editar_perfil
+def editar_autor(request,id):
+    autor = get_object_or_404(Autor,id=id)
+    if request.method == "POST":
+        formulario = AutorForm(
+            request.POST,
+            request.FILES,
+            instance=autor
+        )
+
+        if formulario.is_valid():
+            formulario.save()
+            return redirect("lista_autores")
+    else:
+        formulario = AutorForm(instance=autor)
+    
+    return render(request,"publicaciones/editar_autor.html",{"autor":autor,"formulario":formulario})
 
 # ---------------
 # DELETE

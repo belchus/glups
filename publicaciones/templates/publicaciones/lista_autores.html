@@ -5,10 +5,16 @@ Autores
 {% endblock %}
 
 {% block content %}
+<h1>Autores</h1>
+<a href="{% url 'crear_autor'%}">+ Nuevo autor</a>
   <h2>Listado de Autores</h2>
     <ul>
         {% for autor in autores %}
-        <li>{{ autor.nombre }} - {{ autor.post }} </li>
+        {% if autor.avatar %}
+        <img src="{{autor.avatar.url}}" alt="" width="120" height="120">
+        {%endif%}
+        <li>{{ autor.nombre }} - {{ autor.apellido }} </li>
+        <a href="{% url 'editar_autor' autor.id %}">Editar autor</a>
         {% endfor %}
     </ul>
 {% endblock %}
